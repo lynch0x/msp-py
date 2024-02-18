@@ -108,7 +108,7 @@ def calculate_checksum(arguments: Union[int, str, bool, bytes, List[Union[int, s
 
 
 
-def invoke_method(server: str, method: str, params: list, session_id: str) -> tuple[int, any]:
+def invoke_method(server: str, method: str, params: list) -> tuple[int, any]:
     """
     Invoke a method on the MSP API
     """
@@ -120,7 +120,6 @@ def invoke_method(server: str, method: str, params: list, session_id: str) -> tu
     event = remoting.Envelope(AMF3)
 
     event.headers = remoting.HeaderCollection({
-        ("sessionID", False, session_id),
         ("needClassName", False, False),
         ("id", False, calculate_checksum(params)
     )})
@@ -133,16 +132,8 @@ def invoke_method(server: str, method: str, params: list, session_id: str) -> tu
 
     headers = {
         "Referer": "app:/cache/t1.bin/[[DYNAMIC]]/2",
-        "Accept": ("text/xml, application/xml, application/xhtml+xml, "
-                   "text/html;q=0.9, text/plain;q=0.8, text/css, image/png, "
-                   "image/jpeg, image/gif;q=0.8, application/x-shockwave-flash, "
-                   "video/mp4;q=0.9, flv-application/octet-stream;q=0.8, "
-                   "video/x-flv;q=0.7, audio/mp4, application/futuresplash, "
-                   "/;q=0.5, application/x-mpegURL"),
-        "x-flash-version": "32,0,0,100",
         "Content-Length": str(len(encoded_req)),
         "Content-Type": "application/x-amf",
-        "Accept-Encoding": "gzip, deflate",
         "User-Agent": "Mozilla/5.0 (Windows; U; en) AppleWebKit/533.19.4 "
                       "(KHTML, like Gecko) AdobeAIR/32.0",
         "Connection": "Keep-Alive",
@@ -156,10 +147,3 @@ def invoke_method(server: str, method: str, params: list, session_id: str) -> tu
         if resp.status != 200:
             return (resp.status, resp_data)
         return (resp.status, remoting.decode(resp_data)["/1"].body)
-
-
-def get_session_id() -> str:
-    """
-    Generate a random session id
-    """
-    return base64.b64encode(token_hex(23).encode()).decode()
